@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real-time Graph</title>
+<script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<style>
+body { font-family: Arial, sans-serif; }
+#chartContainer { height: 400px; width: 100%; }
+</style>
+</head>
+<body>
+
+<h1>Light and Power Levels Over Time</h1>
+<div id="chartContainer"></div>
+
+<script>
+var lightDataPoints = [];
+var powerDataPoints = [];
+
+var chart = new CanvasJS.Chart("chartContainer", {
+title: {
+text: "Light and Power Levels"
+},
+axisX: {
+title: "Timestamp",
+valueFormatString: "HH:mm:ss"
+},
+axisY: {
+title: "Sensor Value",
+includeZero: false
+},
+toolTip: {
+shared: true
+},
+data: [
+{
+type: "line",
+name: "Light Level",
+showInLegend: true,
+dataPoints: lightDataPoints
+},
+{
+type: "line",
+name: "Power Level",
+showInLegend: true,
+dataPoints: powerDataPoints
+}
+]
+});
+
+function fetchAndUpdateData() {
+fetch('graph.php')
+.then(response => response.json())
+.then(data => {
+var now = new Date(); 
+lightDataPoints.push({ x: now, y: data.light_intensity });
+powerDataPoints.push({ x: now, y: data.temperature });
+
+if (lightDataPoints.length > 30) lightDataPoints.shift();
+if (powerDataPoints.length > 30) powerDataPoints.shift();
+
+chart.render();
+})
+.catch(error => console.error('Error fetching data:', error));
+}
+
+fetchAndUpdateData();            
+setInterval(fetchAndUpdateData, 5000);  
+</script>
+
+</body>
+</html>
